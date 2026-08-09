@@ -1,19 +1,19 @@
 /* =============================================================================
-   GREEN MEADOW FARM — server.js
+   GREEN MEADOW FARM â€” server.js
    Backend Node.js + Express + MongoDB (Mongoose)
    -----------------------------------------------------------------------------
-   Đây là nơi DUY NHẤT quyết định vàng, trứng, cấp độ nâng cấp của người chơi,
-   và cũng là nơi lưu bảng xếp hạng THẬT dùng chung cho mọi người chơi
-   (thay cho Firebase). File HTML chỉ hiển thị — mọi hành động (mua thú,
-   nâng cấp, bán trứng) phải đi qua API dưới đây, nên sửa dữ liệu bằng F12
-   trên máy người chơi sẽ KHÔNG có tác dụng.
+   ÄĂ¢y lĂ  nÆ¡i DUY NHáº¤T quyáº¿t Ä‘á»‹nh vĂ ng, trá»©ng, cáº¥p Ä‘á»™ nĂ¢ng cáº¥p cá»§a ngÆ°á»i chÆ¡i,
+   vĂ  cÅ©ng lĂ  nÆ¡i lÆ°u báº£ng xáº¿p háº¡ng THáº¬T dĂ¹ng chung cho má»i ngÆ°á»i chÆ¡i
+   (thay cho Firebase). File HTML chá»‰ hiá»ƒn thá»‹ â€” má»i hĂ nh Ä‘á»™ng (mua thĂº,
+   nĂ¢ng cáº¥p, bĂ¡n trá»©ng) pháº£i Ä‘i qua API dÆ°á»›i Ä‘Ă¢y, nĂªn sá»­a dá»¯ liá»‡u báº±ng F12
+   trĂªn mĂ¡y ngÆ°á»i chÆ¡i sáº½ KHĂ”NG cĂ³ tĂ¡c dá»¥ng.
 
-   Có thể DÙNG CHUNG cụm MongoDB Atlas bạn đã tạo cho Aqua Paradise —
-   chỉ cần đổi TÊN DATABASE trong MONGODB_URI (ví dụ .../green_meadow thay
-   vì .../aqua_paradise), không cần tạo cụm mới.
+   CĂ³ thá»ƒ DĂ™NG CHUNG cá»¥m MongoDB Atlas báº¡n Ä‘Ă£ táº¡o cho Aqua Paradise â€”
+   chá»‰ cáº§n Ä‘á»•i TĂN DATABASE trong MONGODB_URI (vĂ­ dá»¥ .../green_meadow thay
+   vĂ¬ .../aqua_paradise), khĂ´ng cáº§n táº¡o cá»¥m má»›i.
 
-   Cách chạy: giống hệt Aqua Paradise — deploy lên Render/Railway (điền các
-   biến môi trường trong .env.example), rồi copy URL vừa deploy vào biến
+   CĂ¡ch cháº¡y: giá»‘ng há»‡t Aqua Paradise â€” deploy lĂªn Render/Railway (Ä‘iá»n cĂ¡c
+   biáº¿n mĂ´i trÆ°á»ng trong .env.example), rá»“i copy URL vá»«a deploy vĂ o biáº¿n
    API_BASE trong file green_meadow_farm.html.
 ============================================================================= */
 
@@ -35,14 +35,13 @@ const {
 } = process.env;
 
 if (!MONGODB_URI || !BOT_TOKEN || !JWT_SECRET) {
-  console.error('❌ Thiếu biến môi trường bắt buộc. Kiểm tra lại file .env (xem .env.example).');
-  process.exit(1);
+  console.error('â ï¸ Thiáº¿u biáº¿n mĂ´i trÆ°á»ng báº¯t buá»™c (MONGODB_URI/BOT_TOKEN/JWT_SECRET). Server sáº½ tráº£ lá»—i 500 cho má»i request cho tá»›i khi Ä‘Æ°á»£c cáº¥u hĂ¬nh Ä‘á»§ trĂªn Vercel.');
 }
 
-/* =========================== DỮ LIỆU CON VẬT (NGUỒN SỰ THẬT DUY NHẤT) =========================== */
-const EGG_TIME_SEC = 30;      // giây / quả, áp dụng cho mọi con vật
-const MAX_OWNED = 3;          // mỗi loại thú tối đa 3 con
-const MAX_ANIMAL_LEVEL = 20;  // cấp nâng cấp tối đa cho mỗi con vật
+/* =========================== Dá»® LIá»†U CON Váº¬T (NGUá»’N Sá»° THáº¬T DUY NHáº¤T) =========================== */
+const EGG_TIME_SEC = 30;      // giĂ¢y / quáº£, Ă¡p dá»¥ng cho má»i con váº­t
+const MAX_OWNED = 3;          // má»—i loáº¡i thĂº tá»‘i Ä‘a 3 con
+const MAX_ANIMAL_LEVEL = 20;  // cáº¥p nĂ¢ng cáº¥p tá»‘i Ä‘a cho má»—i con váº­t
 
 const ANIMALS = [
   // ---- Lv1 ----
@@ -93,10 +92,10 @@ const ANIMAL_MAP = Object.fromEntries(ANIMALS.map(a => [a.id, a]));
 
 function xpNeeded(level) { return level * 500; }
 
-/* =========================== KẾT NỐI DATABASE (kiểu cache cho serverless) ===========================
-   Trên Vercel, mỗi request có thể chạy trên một "phiên bản hàm" khác nhau, nên không thể
-   kết nối 1 lần rồi giữ mãi như server chạy liên tục. Đoạn dưới đây lưu lại kết nối đã có
-   (nếu còn) để tái sử dụng, chỉ tạo kết nối mới khi thực sự cần. */
+/* =========================== Káº¾T Ná»I DATABASE (kiá»ƒu cache cho serverless) ===========================
+   TrĂªn Vercel, má»—i request cĂ³ thá»ƒ cháº¡y trĂªn má»™t "phiĂªn báº£n hĂ m" khĂ¡c nhau, nĂªn khĂ´ng thá»ƒ
+   káº¿t ná»‘i 1 láº§n rá»“i giá»¯ mĂ£i nhÆ° server cháº¡y liĂªn tá»¥c. Äoáº¡n dÆ°á»›i Ä‘Ă¢y lÆ°u láº¡i káº¿t ná»‘i Ä‘Ă£ cĂ³
+   (náº¿u cĂ²n) Ä‘á»ƒ tĂ¡i sá»­ dá»¥ng, chá»‰ táº¡o káº¿t ná»‘i má»›i khi thá»±c sá»± cáº§n. */
 mongoose.set('strictQuery', true);
 let cachedConnection = null;
 async function connectDB() {
@@ -111,23 +110,23 @@ const PlayerSchema = new mongoose.Schema({
   username: { type: String, default: '' },
   level: { type: Number, default: 1 },
   xp: { type: Number, default: 0 },
-  gold: { type: Number, default: 50000 }, // vàng khởi đầu khi tạo tài khoản
-  owned: { type: Map, of: Number, default: {} },        // animalId -> số lượng (tối đa MAX_OWNED)
-  eggs: { type: Map, of: Number, default: {} },          // animalId -> số trứng đang có
-  animalLevel: { type: Map, of: Number, default: {} },    // animalId -> cấp nâng cấp (1-20)
-  lastCollected: { type: Map, of: Number, default: {} },  // animalId -> timestamp (ms) lần tính trứng gần nhất
+  gold: { type: Number, default: 50000 }, // vĂ ng khá»Ÿi Ä‘áº§u khi táº¡o tĂ i khoáº£n
+  owned: { type: Map, of: Number, default: {} },        // animalId -> sá»‘ lÆ°á»£ng (tá»‘i Ä‘a MAX_OWNED)
+  eggs: { type: Map, of: Number, default: {} },          // animalId -> sá»‘ trá»©ng Ä‘ang cĂ³
+  animalLevel: { type: Map, of: Number, default: {} },    // animalId -> cáº¥p nĂ¢ng cáº¥p (1-20)
+  lastCollected: { type: Map, of: Number, default: {} },  // animalId -> timestamp (ms) láº§n tĂ­nh trá»©ng gáº§n nháº¥t
 }, { timestamps: true });
 
 const Player = mongoose.model('Player', PlayerSchema);
 
-/* =========================== TIỆN ÍCH CHỐNG SẬP =========================== */
+/* =========================== TIá»†N ĂCH CHá»NG Sáº¬P =========================== */
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
-process.on('unhandledRejection', (reason) => console.error('⚠️ unhandledRejection:', reason));
-process.on('uncaughtException', (err) => console.error('⚠️ uncaughtException:', err));
+process.on('unhandledRejection', (reason) => console.error('â ï¸ unhandledRejection:', reason));
+process.on('uncaughtException', (err) => console.error('â ï¸ uncaughtException:', err));
 
-/* =========================== XÁC THỰC TELEGRAM =========================== */
+/* =========================== XĂC THá»°C TELEGRAM =========================== */
 function verifyTelegramInitData(initData) {
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
@@ -152,16 +151,16 @@ async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    if (!token) return res.status(401).json({ error: 'Chưa đăng nhập.' });
+    if (!token) return res.status(401).json({ error: 'ChÆ°a Ä‘Äƒng nháº­p.' });
 
     const payload = jwt.verify(token, JWT_SECRET);
     const player = await Player.findOne({ telegramId: payload.telegramId });
-    if (!player) return res.status(401).json({ error: 'Không tìm thấy người chơi.' });
+    if (!player) return res.status(401).json({ error: 'KhĂ´ng tĂ¬m tháº¥y ngÆ°á»i chÆ¡i.' });
 
     req.player = player;
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ, vui lòng mở lại game.' });
+    return res.status(401).json({ error: 'PhiĂªn Ä‘Äƒng nháº­p khĂ´ng há»£p lá»‡, vui lĂ²ng má»Ÿ láº¡i game.' });
   }
 }
 
@@ -242,9 +241,18 @@ const app = express();
 app.use(helmet());
 app.use(express.json({ limit: '10kb' }));
 app.use(cors({ origin: ALLOWED_ORIGIN || '*' }));
+
+// Náº¿u thiáº¿u biáº¿n mĂ´i trÆ°á»ng, tráº£ lá»—i rĂµ rĂ ng thay vĂ¬ lĂ m sáº­p cáº£ hĂ m serverless.
+app.use((req, res, next) => {
+  if (!MONGODB_URI || !BOT_TOKEN || !JWT_SECRET) {
+    return res.status(500).json({ error: 'Server chÆ°a Ä‘Æ°á»£c cáº¥u hĂ¬nh Ä‘á»§ biáº¿n mĂ´i trÆ°á»ng (MONGODB_URI/BOT_TOKEN/JWT_SECRET) trĂªn Vercel.' });
+  }
+  next();
+});
+
 app.use('/api/', rateLimit({ windowMs: 60 * 1000, max: 60 }));
 
-// Đảm bảo đã kết nối MongoDB trước khi xử lý bất kỳ request nào (bắt buộc trên Vercel).
+// Äáº£m báº£o Ä‘Ă£ káº¿t ná»‘i MongoDB trÆ°á»›c khi xá»­ lĂ½ báº¥t ká»³ request nĂ o (báº¯t buá»™c trĂªn Vercel).
 app.use(asyncHandler(async (req, res, next) => {
   await connectDB();
   next();
@@ -254,10 +262,10 @@ app.use(asyncHandler(async (req, res, next) => {
 
 app.post('/api/auth', asyncHandler(async (req, res) => {
   const { initData } = req.body || {};
-  if (!initData) return res.status(400).json({ error: 'Thiếu initData.' });
+  if (!initData) return res.status(400).json({ error: 'Thiáº¿u initData.' });
 
   const tgUser = verifyTelegramInitData(initData);
-  if (!tgUser || !tgUser.id) return res.status(401).json({ error: 'Xác thực Telegram thất bại.' });
+  if (!tgUser || !tgUser.id) return res.status(401).json({ error: 'XĂ¡c thá»±c Telegram tháº¥t báº¡i.' });
 
   const telegramId = String(tgUser.id);
   let player = await Player.findOne({ telegramId });
@@ -281,15 +289,15 @@ app.get('/api/state', authMiddleware, asyncHandler(async (req, res) => {
 app.post('/api/buy', authMiddleware, asyncHandler(async (req, res) => {
   const { animalId } = req.body || {};
   const animal = ANIMAL_MAP[animalId];
-  if (!animal) return res.status(400).json({ error: 'Con vật không tồn tại.' });
+  if (!animal) return res.status(400).json({ error: 'Con váº­t khĂ´ng tá»“n táº¡i.' });
 
   const player = req.player;
   settleEggs(player);
 
-  if (player.level < animal.lvl) return res.status(400).json({ error: `Cần đạt cấp ${animal.lvl} để mua con vật này.` });
+  if (player.level < animal.lvl) return res.status(400).json({ error: `Cáº§n Ä‘áº¡t cáº¥p ${animal.lvl} Ä‘á»ƒ mua con váº­t nĂ y.` });
   const owned = player.owned.get(animalId) || 0;
-  if (owned >= MAX_OWNED) return res.status(400).json({ error: `Đã nuôi tối đa ${MAX_OWNED} con rồi.` });
-  if (player.gold < animal.price) return res.status(400).json({ error: 'Không đủ vàng.' });
+  if (owned >= MAX_OWNED) return res.status(400).json({ error: `ÄĂ£ nuĂ´i tá»‘i Ä‘a ${MAX_OWNED} con rá»“i.` });
+  if (player.gold < animal.price) return res.status(400).json({ error: 'KhĂ´ng Ä‘á»§ vĂ ng.' });
 
   player.gold -= animal.price;
   player.owned.set(animalId, owned + 1);
@@ -302,14 +310,14 @@ app.post('/api/buy', authMiddleware, asyncHandler(async (req, res) => {
 app.post('/api/upgrade', authMiddleware, asyncHandler(async (req, res) => {
   const { animalId } = req.body || {};
   const animal = ANIMAL_MAP[animalId];
-  if (!animal) return res.status(400).json({ error: 'Con vật không tồn tại.' });
+  if (!animal) return res.status(400).json({ error: 'Con váº­t khĂ´ng tá»“n táº¡i.' });
 
   const player = req.player;
-  if ((player.owned.get(animalId) || 0) <= 0) return res.status(400).json({ error: 'Bạn chưa nuôi con này.' });
+  if ((player.owned.get(animalId) || 0) <= 0) return res.status(400).json({ error: 'Báº¡n chÆ°a nuĂ´i con nĂ y.' });
 
   const cost = upgradeCostFor(player, animal);
-  if (cost === null) return res.status(400).json({ error: 'Con này đã đạt cấp tối đa.' });
-  if (player.gold < cost) return res.status(400).json({ error: 'Không đủ vàng để nâng cấp.' });
+  if (cost === null) return res.status(400).json({ error: 'Con nĂ y Ä‘Ă£ Ä‘áº¡t cáº¥p tá»‘i Ä‘a.' });
+  if (player.gold < cost) return res.status(400).json({ error: 'KhĂ´ng Ä‘á»§ vĂ ng Ä‘á»ƒ nĂ¢ng cáº¥p.' });
 
   player.gold -= cost;
   player.animalLevel.set(animalId, animalLevelOf(player, animalId) + 1);
@@ -321,14 +329,14 @@ app.post('/api/upgrade', authMiddleware, asyncHandler(async (req, res) => {
 app.post('/api/sell', authMiddleware, asyncHandler(async (req, res) => {
   const { animalId, qty } = req.body || {};
   const animal = ANIMAL_MAP[animalId];
-  if (!animal) return res.status(400).json({ error: 'Con vật không tồn tại.' });
+  if (!animal) return res.status(400).json({ error: 'Con váº­t khĂ´ng tá»“n táº¡i.' });
 
   const player = req.player;
   settleEggs(player);
 
   const have = player.eggs.get(animalId) || 0;
   const n = Math.min(Number(qty) || have, have);
-  if (n <= 0) return res.status(400).json({ error: 'Không có trứng để bán.' });
+  if (n <= 0) return res.status(400).json({ error: 'KhĂ´ng cĂ³ trá»©ng Ä‘á»ƒ bĂ¡n.' });
 
   const eggVal = effectiveEggValue(player, animal);
   player.eggs.set(animalId, have - n);
@@ -353,26 +361,26 @@ app.post('/api/sell-all', authMiddleware, asyncHandler(async (req, res) => {
       player.eggs.set(animal.id, 0);
     }
   }
-  if (!any) return res.status(400).json({ error: 'Không có trứng để bán.' });
+  if (!any) return res.status(400).json({ error: 'KhĂ´ng cĂ³ trá»©ng Ä‘á»ƒ bĂ¡n.' });
 
   addXpAndGold(player, goldGain, xpGain);
   await player.save();
   res.json({ state: serializeState(player) });
 }));
 
-// Bảng xếp hạng THẬT dùng chung cho mọi người chơi — sắp theo vàng, top 10.
+// Báº£ng xáº¿p háº¡ng THáº¬T dĂ¹ng chung cho má»i ngÆ°á»i chÆ¡i â€” sáº¯p theo vĂ ng, top 10.
 app.get('/api/leaderboard', asyncHandler(async (req, res) => {
   const top = await Player.find({}).sort({ gold: -1 }).limit(10)
     .select('username gold level -_id').lean();
-  res.json({ list: top.map(p => ({ name: p.username || 'Người chơi ẩn danh', gold: p.gold, level: p.level })) });
+  res.json({ list: top.map(p => ({ name: p.username || 'NgÆ°á»i chÆ¡i áº©n danh', gold: p.gold, level: p.level })) });
 }));
 
-/* =========================== XỬ LÝ LỖI CHUNG (chống sập) =========================== */
-app.use((req, res) => res.status(404).json({ error: 'Không tìm thấy đường dẫn API.' }));
+/* =========================== Xá»¬ LĂ Lá»–I CHUNG (chá»‘ng sáº­p) =========================== */
+app.use((req, res) => res.status(404).json({ error: 'KhĂ´ng tĂ¬m tháº¥y Ä‘Æ°á»ng dáº«n API.' }));
 app.use((err, req, res, next) => {
-  console.error('🔥 Lỗi server:', err);
-  res.status(500).json({ error: 'Đã xảy ra lỗi phía máy chủ, vui lòng thử lại.' });
+  console.error('đŸ”¥ Lá»—i server:', err);
+  res.status(500).json({ error: 'ÄĂ£ xáº£y ra lá»—i phĂ­a mĂ¡y chá»§, vui lĂ²ng thá»­ láº¡i.' });
 });
 
-// Trên Vercel KHÔNG dùng app.listen() — thay vào đó xuất app ra để Vercel tự gọi mỗi khi có request.
+// TrĂªn Vercel KHĂ”NG dĂ¹ng app.listen() â€” thay vĂ o Ä‘Ă³ xuáº¥t app ra Ä‘á»ƒ Vercel tá»± gá»i má»—i khi cĂ³ request.
 module.exports = app;
