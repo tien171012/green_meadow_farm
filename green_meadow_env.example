@@ -1,0 +1,16 @@
+# Có thể DÙNG CHUNG cụm MongoDB Atlas bạn đã tạo cho Aqua Paradise —
+# chỉ cần đổi TÊN DATABASE ở cuối (ví dụ /green_meadow thay vì /aqua_paradise)
+MONGODB_URI=mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/green_meadow
+
+# Token bot Telegram (lấy từ @BotFather) — có thể dùng chung bot với Aqua Paradise
+# hoặc tạo bot riêng cho Green Meadow Farm, tuỳ bạn
+BOT_TOKEN=123456789:AAExampleBotTokenHere
+
+# Chuỗi bí mật tự đặt để ký phiên đăng nhập (JWT) — đặt càng dài càng khó đoán
+JWT_SECRET=doi-chuoi-nay-thanh-mot-chuoi-that-dai-va-ngau-nhien
+
+# Domain nơi bạn host file HTML (để giới hạn CORS) - dùng * nếu chưa chắc domain cuối cùng
+ALLOWED_ORIGIN=*
+
+# Cổng chạy server - hầu hết dịch vụ hosting sẽ tự set biến này, có thể để nguyên
+PORT=3000
