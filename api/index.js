@@ -111,10 +111,10 @@ const PlayerSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
   xp: { type: Number, default: 0 },
   gold: { type: Number, default: 50000 }, // vĂ ng khá»Ÿi Ä‘áº§u khi táº¡o tĂ i khoáº£n
-  owned: { type: Map, of: Number, default: {} },        // animalId -> sá»‘ lÆ°á»£ng (tá»‘i Ä‘a MAX_OWNED)
-  eggs: { type: Map, of: Number, default: {} },          // animalId -> sá»‘ trá»©ng Ä‘ang cĂ³
-  animalLevel: { type: Map, of: Number, default: {} },    // animalId -> cáº¥p nĂ¢ng cáº¥p (1-20)
-  lastCollected: { type: Map, of: Number, default: {} },  // animalId -> timestamp (ms) láº§n tĂ­nh trá»©ng gáº§n nháº¥t
+  owned: { type: Map, of: Number, default: {} },          // animalId -> sá»‘ lÆ°á»£ng (tá»‘i Ä‘a MAX_OWNED)
+  eggs: { type: Map, of: Number, default: {} },            // animalId -> sá»‘ trá»©ng Ä‘ang cĂ³
+  animalLevel: { type: Map, of: Number, default: {} },     // animalId -> cáº¥p nĂ¢ng cáº¥p (1-20)
+  lastCollected: { type: Map, of: Number, default: {} },   // animalId -> timestamp (ms) láº§n tĂ­nh trá»©ng gáº§n nháº¥t
 }, { timestamps: true });
 
 const Player = mongoose.model('Player', PlayerSchema);
@@ -384,4 +384,3 @@ app.use((err, req, res, next) => {
 
 // TrĂªn Vercel KHĂ”NG dĂ¹ng app.listen() â€” thay vĂ o Ä‘Ă³ xuáº¥t app ra Ä‘á»ƒ Vercel tá»± gá»i má»—i khi cĂ³ request.
 module.exports = app;
-
